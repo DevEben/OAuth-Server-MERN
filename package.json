@@ -1,0 +1,28 @@
+{
+  "name": "asian-pacific-express-backend",
+  "version": "1.0.0",
+  "description": "Backend for the Asian Pacific Express application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "author": "DevEben",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.5.1",
+    "connect-mongo": "^5.0.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.1.0",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "mongoose": "^7.8.0",
+    "nodemailer": "^6.9.14",
+    "nodemon": "^3.1.4",
+    "passport": "^0.6.0",
+    "passport-google-oauth2": "^0.2.0",
+    "passport-twitter": "^0.1.5"
+  },
+  "keywords": []
+}
