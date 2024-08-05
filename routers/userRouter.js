@@ -15,12 +15,13 @@ router.get("/auth/google/callback", passport.authenticate("google", {
 // Success route
 router.get("/auth/google/success", (req, res) => {
     if (req.user) {
+
+        console.log("User: " + req.user)
+        
         const username = req.user.email;
         // Ensure req.session is initialized
         req.session = req.session || {};
         req.session.user = { username };
-
-        console.log(req.session)
 
         // Redirect to the client URL
         return res.redirect(process.env.CLIENT_URL + '/');
