@@ -1,44 +1,28 @@
-const express = require('express');
+// routes.js
+const express = require("express");
+const { authenticate, callback, generateToken } = require("./socialLogin");
 const router = express.Router();
-const passport = require("../helpers/socialLogin");
-const userModel = require('../models/userModel'); // Adjust the path to your user model
+const userModel = require("../models/userModel"); // Replace with your actual user model
+const jwt = require("jsonwebtoken");
 
-// Endpoint to initiate Google login
-router.get('/auth/google', passport.authenticate("google", { scope: ["email", "profile"] }));
+const jwtSecret = process.env.SECRET; // Change this to a secure secret in production
 
-// Google callback route
-router.get("/auth/google/callback", passport.authenticate("google", {
-    successRedirect: process.env.CLIENT_URL + "/auth/google/success",
-    failureRedirect: process.env.CLIENT_URL + "/auth/google/failure"
-}));
+router.get("/auth/google", authenticate);
 
-// Success route
-router.get("/auth/google/success", (req, res) => {
-    if (req.user) {
-
-        console.log("User: " + req.user)
-        
-        const username = req.user.email;
-        // Ensure req.session is initialized
-        req.session = req.session || {};
-        req.session.user = { username };
-
-        // Redirect to the client URL
-        return res.redirect(process.env.CLIENT_URL + '/');
-    } else {
-        return res.redirect("/auth/google/failure");
-    }
+router.get("/auth/google/callback", callback, (req, res) => {
+    const token = generateToken(req.user);
+    res.cookie("jwt", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    res.redirect(process.env.CLIENT_URL); // Redirect to your frontend
 });
 
-// Failure route
-router.get("/auth/google/failure", (req, res) => {
-    return res.status(401).json("Authentication failed");
-});
-
-// Endpoint to retrieve authenticated user data
 router.get("/auth/user", (req, res) => {
-    if (req.session.user) {
-        userModel.findOne({ email: req.session.user.username })
+    const token = req.cookies.jwt;
+    if (!token) {
+        return res.status(401).json({ message: "User not authenticated" });
+    }
+    try {
+        const decoded = jwt.verify(token, jwtSecret);
+        userModel.findOne({ email: decoded.user.emails[0].value }) // Replace with your actual user lookup logic
             .then(user => {
                 if (user) {
                     return res.status(200).json({
@@ -50,38 +34,9 @@ router.get("/auth/user", (req, res) => {
                 }
             })
             .catch(err => res.status(500).json({ message: "Server error", error: err }));
-    } else {
-        return res.status(401).json({ message: "User not authenticated" });
+    } catch (err) {
+        res.status(401).json({ message: "Invalid token" });
     }
-});
-
-// Initiate Twitter login
-router.get('/auth/twitter', passport.authenticate('twitter'));
-
-// Twitter callback route
-router.get('/auth/twitter/callback', passport.authenticate('twitter', {
-    successRedirect: process.env.CLIENT_URL + '/auth/twitter/success',
-    failureRedirect: process.env.CLIENT_URL + '/auth/twitter/failure'
-}));
-
-// Success route
-router.get('/auth/twitter/success', (req, res) => {
-    if (req.user) {
-        const username = req.user.email;
-        // Ensure req.session is initialized
-        req.session = req.session || {};
-        req.session.user = { username };
-
-        // Redirect to the client URL
-        return res.redirect(process.env.CLIENT_URL + '/');
-    } else {
-        return res.redirect('/auth/twitter/failure');
-    }
-});
-
-// Failure route
-router.get('/auth/twitter/failure', (req, res) => {
-    return res.status(401).json('Authentication failed');
 });
 
 module.exports = router;
