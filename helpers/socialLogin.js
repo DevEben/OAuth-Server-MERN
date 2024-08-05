@@ -27,8 +27,8 @@ app.use(session({
     }),
     cookie: { 
         secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
-        httpOnly: false, // Mitigates XSS attacks
-        sameSite: 'none', // Enable cross-site cookies for different origins
+        // httpOnly: false, // Mitigates XSS attacks
+        // sameSite: 'none', // Enable cross-site cookies for different origins
     } 
 }));
 
@@ -48,6 +48,11 @@ app.use(session({
 //         maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
 //     }
 // }));
+
+// Initialize passport
+app.use(passport.initialize());
+// Integrate passport with session auth
+app.use(passport.session());
 
 // Passport Serialization and Deserialization
 passport.serializeUser((user, done) => {

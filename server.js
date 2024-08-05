@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 // Session configuration with MongoDB
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    resave: false,
+    resave: true,
     saveUninitialized: true,
     store: MongoStore.create({
         mongoUrl: process.env.DATABASE, // MongoDB connection URI
@@ -46,8 +46,8 @@ app.use(session({
     }),
     cookie: { 
         secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
-        httpOnly: false, // Mitigates XSS attacks
-        sameSite: 'none', // Enable cross-site cookies for different origins
+        // httpOnly: false, // Mitigates XSS attacks
+        // sameSite: 'none', // Enable cross-site cookies for different origins
     } 
 }));
 
