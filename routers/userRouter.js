@@ -1,6 +1,6 @@
 // routes.js
 const express = require("express");
-const { authenticate, callback, generateToken } = require("./socialLogin");
+const { authenticate, callback, generateToken } = require("../helpers/socialLogin");
 const router = express.Router();
 const userModel = require("../models/userModel"); // Replace with your actual user model
 const jwt = require("jsonwebtoken");
