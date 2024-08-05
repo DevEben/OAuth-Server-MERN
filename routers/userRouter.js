@@ -20,6 +20,8 @@ router.get("/auth/google/success", (req, res) => {
         req.session = req.session || {};
         req.session.user = { username };
 
+        console.log(req.session)
+
         // Redirect to the client URL
         return res.redirect(process.env.CLIENT_URL + '/');
     } else {
@@ -68,8 +70,6 @@ router.get('/auth/twitter/success', (req, res) => {
         // Ensure req.session is initialized
         req.session = req.session || {};
         req.session.user = { username };
-
-        console.log(req.session)
 
         // Redirect to the client URL
         return res.redirect(process.env.CLIENT_URL + '/');

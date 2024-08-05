@@ -37,20 +37,36 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session configuration with MongoDB
 app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false, // Only create session when something is stored
-  store: MongoStore.create({
-    mongoUrl: process.env.DATABASE, // MongoDB connection URI
-    collectionName: 'sessions' // Collection name to store sessions
-  }),
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // Secure cookies only in production
-    httpOnly: true, // Mitigates XSS attacks
-    sameSite: 'none', // Enable cross-site cookies for different origins
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
-  }
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+        mongoUrl: process.env.DATABASE, // MongoDB connection URI
+        collectionName: 'sessions' // Collection name to store sessions
+    }),
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
+        httpOnly: false, // Mitigates XSS attacks
+        sameSite: 'none', // Enable cross-site cookies for different origins
+    } 
 }));
+
+// // Session configuration with MongoDB
+// app.use(session({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: false, // Only create session when something is stored
+//   store: MongoStore.create({
+//     mongoUrl: process.env.DATABASE, // MongoDB connection URI
+//     collectionName: 'sessions' // Collection name to store sessions
+//   }),
+//   cookie: {
+//     secure: process.env.NODE_ENV === 'production', // Secure cookies only in production
+//     httpOnly: false, // Mitigates XSS attacks
+//     sameSite: 'none', // Enable cross-site cookies for different origins
+//     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+//   }
+// }));
 
 // Initialize passport and use passport session
 app.use(passport.initialize());
