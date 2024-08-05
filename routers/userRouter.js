@@ -69,6 +69,8 @@ router.get('/auth/twitter/success', (req, res) => {
         req.session = req.session || {};
         req.session.user = { username };
 
+        console.log(req.session)
+
         // Redirect to the client URL
         return res.redirect(process.env.CLIENT_URL + '/');
     } else {
