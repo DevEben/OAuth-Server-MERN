@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const mongoose = require("mongoose");
+const MongoStore = require('connect-mongo');
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
