@@ -11,32 +11,35 @@ passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL
 },
-async (accessToken, refreshToken, profile, done) => {
-    // Here, you can save the user to your database if necessary
-    try {
-        let user = await userModel.findOne({ email: profile.email });
-        if (!user) {
-            user = await userModel.create({
-                firstName: profile.given_name,
-                lastName: profile.family_name,
-                email: profile.email,
-                profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-                isVerified: profile.email_verified,
-            });
+    async (accessToken, refreshToken, profile, done) => {
+        // Here, you can save the user to your database if necessary
+        try {
+            let user = await userModel.findOne({ email: profile.email });
+            if (!user) {
+                user = await userModel.create({
+                    firstName: profile.given_name,
+                    lastName: profile.family_name,
+                    email: profile.email,
+                    profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+                    isVerified: profile.email_verified,
+                });
+            }
+            return done(null, user);
+        } catch (error) {
+            return done(error, false);
         }
-        return done(null, user);
-    } catch (error) {
-        return done(error, false);
-    }
-}));
+    }));
 
 passport.serializeUser((user, done) => {
-    done(null, user);
+    done(null, user._id);
 });
 
-passport.deserializeUser((user, done) => {
-    done(null, user);
+passport.deserializeUser((id, done) => {
+    userModel.findById(id, (err, user) => {
+        done(err, user);
+    });
 });
+
 
 module.exports = {
     generateToken: (user) => {

@@ -15,7 +15,6 @@ const app = express();
 
 const corsOptions = {
     origin: [
-        "https://asianpacificexpress.onrender.com",
         "https://courier-management.onrender.com",
         "https://spiraltech.onrender.com",
         "http://localhost:5173",
@@ -35,7 +34,7 @@ app.use(session({
     saveUninitialized: true,
     store: MongoStore.create({ mongoUrl: process.env.DATABASE }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         httpOnly: true,
         maxAge: 60000,
     },

@@ -17,7 +17,7 @@ router.get("/auth/google/callback", callback, (req, res) => {
         secure: true,
         sameSite: 'None',
         path: '/', // Ensure the path is correct
-        domain: process.env.NODE_ENV === 'production' ? '.spiraltech.onrender.com' : 'http://localhost:5173',
+        domain: '.spiraltech.onrender.com',
     };
 
     // Set cookie and log the event
@@ -33,7 +33,7 @@ router.get("/auth/user", (req, res) => {
     }
     try {
         const decoded = jwt.verify(token, jwtSecret);
-        userModel.findOne({ email: decoded.user.emails[0].value }) // Replace with your actual user lookup logic
+            userModel.findById(decoded.user._id) // Replace with your actual user lookup logic
             .then(user => {
                 if (user) {
                     return res.status(200).json({
