@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel")
 
 const jwtSecret = process.env.SECRET; // Change this to a secure secret in production
-console.log(jwtSecret);
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
