@@ -17,6 +17,7 @@ router.get("/auth/google/callback", callback, (req, res) => {
 
 router.get("/auth/user", (req, res) => {
     const token = req.cookies.jwt;
+    console.log("jwt: " + token)
     if (!token) {
         return res.status(401).json({ message: "User not authenticated" });
     }
