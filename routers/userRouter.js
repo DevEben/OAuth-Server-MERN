@@ -92,8 +92,8 @@ router.get('/auth/google/callback',
 // Route to Get User Data with Token Authentication
 router.get('/auth/user', authenticateToken, (req, res) => {
     // User is authenticated, return user data
-    if (req.session.user) {
-        userModel.findOne({ email: req.session.user.username })
+    if (req.user.email) {
+        userModel.findOne({ email: req.user.email })
             .then(user => {
                 if (user) {
                     return res.status(200).json({
