@@ -11,8 +11,17 @@ router.get("/auth/google", authenticate);
 
 router.get("/auth/google/callback", callback, (req, res) => {
     const token = generateToken(req.user);
-    res.cookie("jwt", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-    console.log("Token generated and cookie set: ", token);
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+        path: '/', // Ensure the path is correct
+        domain: process.env.NODE_ENV === 'production' ? 'https://spiraltech.onrender.com' : 'http://localhost:5173',
+    };
+
+    // Set cookie and log the event
+    res.cookie("jwt", token, cookieOptions);
     res.redirect(process.env.CLIENT_URL); // Redirect to your frontend
 });
 
