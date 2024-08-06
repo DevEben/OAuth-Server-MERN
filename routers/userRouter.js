@@ -61,7 +61,7 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel');
 const router = express.Router();
 
-const jwtSecret = process.env.JWT_SECRET;
+const jwtSecret = process.env.SECRET;
 
 // Google Authentication Routes
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
