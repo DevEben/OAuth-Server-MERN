@@ -79,7 +79,7 @@ router.get('/auth/twitter', passport.authenticate('twitter'));
 
 router.get('/auth/twitter/callback', passport.authenticate('twitter', {
     failureRedirect: '/auth/twitter/failure',
-    session: false
+    session: true // Make sure session is enabled
 }), (req, res) => {
     const token = jwt.sign({ user: req.user }, jwtSecret, { expiresIn: '1h' });
     res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);

@@ -117,7 +117,7 @@ passport.use(new TwitterStrategy({
         try {
             // Check if the user exists
             const email = profile.emails && profile.emails[0].value; // Ensure email exists
-            const existingUser = await userModel.findOne({ twitterId: profile.id });
+            const existingUser = await userModel.findOne({ email });
 
             if (existingUser) {
                 return done(null, existingUser); // Existing user found
