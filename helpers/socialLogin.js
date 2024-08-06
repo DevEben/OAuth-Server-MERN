@@ -91,11 +91,9 @@ passport.use(new GoogleStrategy({
         email: profile.emails[0].value,
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
-        photo: profile.photos[0].value,
-        isVerified: profile.email_verified,
+        profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+        isVerified: true, // Assume email is verified if using Google
       }).save();
-
-      console.log(profile)
 
       done(null, newUser); // Return new user
     } catch (err) {
