@@ -71,7 +71,7 @@ router.get('/auth/google/callback', passport.authenticate('google', {
     session: false
 }), (req, res) => {
     const token = jwt.sign({ user: req.user }, jwtSecret, { expiresIn: '1h' });
-    res.redirect(`/#/auth-success?token=${token}`);
+    res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
 });
 
 // Twitter Authentication Routes
@@ -82,7 +82,7 @@ router.get('/auth/twitter/callback', passport.authenticate('twitter', {
     session: false
 }), (req, res) => {
     const token = jwt.sign({ user: req.user }, jwtSecret, { expiresIn: '1h' });
-    res.redirect(`/#/auth-success?token=${token}`);
+    res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
 });
 
 // Route to Get User Data with Token Authentication
