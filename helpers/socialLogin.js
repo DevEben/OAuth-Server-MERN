@@ -95,6 +95,8 @@ passport.use(new GoogleStrategy({
         isVerified: profile.email_verified,
       }).save();
 
+      console.log(profile)
+
       done(null, newUser); // Return new user
     } catch (err) {
       done(err, null);
