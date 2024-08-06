@@ -17,7 +17,7 @@ router.get("/auth/google/callback", callback, (req, res) => {
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
         path: '/', // Ensure the path is correct
-        domain: process.env.NODE_ENV === 'production' ? 'https://spiraltech.onrender.com' : 'http://localhost:5173',
+        domain: process.env.NODE_ENV === 'production' ? '.spiraltech.onrender.com' : 'http://localhost:5173',
     };
 
     // Set cookie and log the event
