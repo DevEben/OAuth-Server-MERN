@@ -11,8 +11,8 @@ router.get("/auth/google", authenticate);
 
 router.get("/auth/google/callback", callback, (req, res) => {
     const token = generateToken(req.user);
-    console.log("token", token);
     res.cookie("jwt", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    console.log("Token generated and cookie set: ", token);
     res.redirect(process.env.CLIENT_URL); // Redirect to your frontend
 });
 
