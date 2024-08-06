@@ -53,6 +53,7 @@
 // passport.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const TwitterStrategy = require('passport-twitter').Strategy;
 const userModel = require('../models/userModel'); // Import User model
 
 // Passport Serialization and Deserialization
@@ -101,5 +102,41 @@ passport.use(new GoogleStrategy({
     }
   }
 ));
+
+
+// Twitter OAuth Strategy
+passport.use(new TwitterStrategy({
+    consumerKey: process.env.TWITTER_CONSUMER_KEY,
+    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+    callbackURL: process.env.TWITTER_CALLBACK_URL,
+    includeEmail: true, // Request email access
+  },
+  async (token, tokenSecret, profile, done) => {
+    try {
+      // Check if the user exists
+      const email = profile.emails && profile.emails[0].value; // Ensure email exists
+      const existingUser = await userModel.findOne({ email });
+
+      if (existingUser) {
+        return done(null, existingUser); // Existing user found
+      }
+
+      // Create a new user
+      const newUser = await new userModel({
+        twitterId: profile.id,
+        email: email,
+        firstName: profile.displayName.split(' ')[0],
+        lastName: profile.displayName.split(' ')[1] || '', // Handle single name
+        profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+        isVerified: true, // Assume email is verified if using Twitter
+      }).save();
+
+      done(null, newUser); // Return new user
+    } catch (err) {
+      done(err, null);
+    }
+  }
+));
+
 
 module.exports = passport;

@@ -54,44 +54,39 @@
 
 
 
-// router.js
+// routes/authRoutes.js
 const express = require('express');
+const passport = require('passport');
 const jwt = require('jsonwebtoken');
-const passport = require('../helpers/socialLogin'); // Import passport configuration
+const userModel = require('../models/userModel');
 const router = express.Router();
 
-// JWT Secret
-const jwtSecret = process.env.SECRET;
+const jwtSecret = process.env.JWT_SECRET;
 
-// Generate JWT Token
-function generateToken(user) {
-    return jwt.sign({ user: { id: user._id, email: user.email, username: user.username } }, jwtSecret, { expiresIn: '1h' });
-}
+// Google Authentication Routes
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Google Login Route
-router.get('/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+router.get('/auth/google/callback', passport.authenticate('google', {
+    failureRedirect: '/auth/google/failure',
+    session: false
+}), (req, res) => {
+    const token = jwt.sign({ user: req.user }, jwtSecret, { expiresIn: '1h' });
+    res.redirect(`/#/auth-success?token=${token}`);
+});
 
-// Google Callback Route
-router.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/auth/google/failure', failureFlash: true }),
-    (req, res) => {
-        if (req.isAuthenticated() && req.user) {
-            // Generate JWT Token
-            const token = generateToken(req.user);
+// Twitter Authentication Routes
+router.get('/auth/twitter', passport.authenticate('twitter'));
 
-            // Redirect with token as a query parameter or send it back to the frontend
-            return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
-        } else {
-            return res.redirect("/auth/google/failure");
-        }
-    }
-);
+router.get('/auth/twitter/callback', passport.authenticate('twitter', {
+    failureRedirect: '/auth/twitter/failure',
+    session: false
+}), (req, res) => {
+    const token = jwt.sign({ user: req.user }, jwtSecret, { expiresIn: '1h' });
+    res.redirect(`/#/auth-success?token=${token}`);
+});
 
 // Route to Get User Data with Token Authentication
 router.get('/auth/user', authenticateToken, (req, res) => {
-    // User is authenticated, return user data
     if (req.user.email) {
         userModel.findOne({ email: req.user.email })
             .then(user => {
@@ -133,10 +128,17 @@ router.get('/auth/google/failure', (req, res) => {
     res.send("Failed to authenticate using Google. Please try again.");
 });
 
+// Twitter Failure Route
+router.get('/auth/twitter/failure', (req, res) => {
+    res.send("Failed to authenticate using Twitter. Please try again.");
+});
+
 // A Logout Route
 router.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/');
+    req.logout(err => {
+        if (err) { return res.status(500).json({ message: "Logout error", error: err }); }
+        res.redirect('/');
+    });
 });
 
 module.exports = router;
