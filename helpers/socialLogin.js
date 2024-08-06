@@ -56,18 +56,20 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
 const userModel = require('../models/userModel'); // Import User model
 
-// Passport Serialization and Deserialization
+// Serialize and Deserialize User
 passport.serializeUser((user, done) => {
-  done(null, user.email); // Serialize by email
+    done(null, user.email || user.twitterId); // Fallback to twitterId if email is missing
 });
 
-passport.deserializeUser(async (email, done) => {
-  try {
-    const user = await userModel.findOne({ email });
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
+passport.deserializeUser(async (identifier, done) => {
+    try {
+        const user = await userModel.findOne({
+            $or: [{ email: identifier }, { twitterId: identifier }],
+        });
+        done(null, user);
+    } catch (err) {
+        done(err, null);
+    }
 });
 
 // Google OAuth Strategy
@@ -76,31 +78,31 @@ passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
     passReqToCallback: true,
-  },
-  async (request, accessToken, refreshToken, profile, done) => {
-    try {
-      // Check if the user exists
-      const existingUser = await userModel.findOne({ email: profile.emails[0].value });
+},
+    async (request, accessToken, refreshToken, profile, done) => {
+        try {
+            // Check if the user exists
+            const existingUser = await userModel.findOne({ email: profile.emails[0].value });
 
-      if (existingUser) {
-        return done(null, existingUser); // Existing user found
-      }
+            if (existingUser) {
+                return done(null, existingUser); // Existing user found
+            }
 
-      // Create a new user
-      const newUser = await new userModel({
-        googleId: profile.id,
-        email: profile.emails[0].value,
-        firstName: profile.name.givenName,
-        lastName: profile.name.familyName,
-        profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-        isVerified: true, // Assume email is verified if using Google
-      }).save();
+            // Create a new user
+            const newUser = await new userModel({
+                googleId: profile.id,
+                email: profile.emails[0].value,
+                firstName: profile.name.givenName,
+                lastName: profile.name.familyName,
+                profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+                isVerified: true, // Assume email is verified if using Google
+            }).save();
 
-      done(null, newUser); // Return new user
-    } catch (err) {
-      done(err, null);
+            done(null, newUser); // Return new user
+        } catch (err) {
+            done(err, null);
+        }
     }
-  }
 ));
 
 
@@ -110,32 +112,32 @@ passport.use(new TwitterStrategy({
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
     callbackURL: process.env.TWITTER_CALLBACK_URL,
     includeEmail: true, // Request email access
-  },
-  async (token, tokenSecret, profile, done) => {
-    try {
-      // Check if the user exists
-      const email = profile.emails && profile.emails[0].value; // Ensure email exists
-      const existingUser = await userModel.findOne({ email });
+},
+    async (token, tokenSecret, profile, done) => {
+        try {
+            // Check if the user exists
+            const email = profile.emails && profile.emails[0].value; // Ensure email exists
+            const existingUser = await userModel.findOne({ twitterId: profile.id });
 
-      if (existingUser) {
-        return done(null, existingUser); // Existing user found
-      }
+            if (existingUser) {
+                return done(null, existingUser); // Existing user found
+            }
 
-      // Create a new user
-      const newUser = await new userModel({
-        twitterId: profile.id,
-        email: email,
-        firstName: profile.displayName.split(' ')[0],
-        lastName: profile.displayName.split(' ')[1] || '', // Handle single name
-        profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-        isVerified: true, // Assume email is verified if using Twitter
-      }).save();
+            // Create a new user
+            const newUser = await new userModel({
+                twitterId: profile.id,
+                email: email,
+                firstName: profile.displayName.split(' ')[0],
+                lastName: profile.displayName.split(' ')[1] || '', // Handle single name
+                profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+                isVerified: true, // Assume email is verified if using Twitter
+            }).save();
 
-      done(null, newUser); // Return new user
-    } catch (err) {
-      done(err, null);
+            done(null, newUser); // Return new user
+        } catch (err) {
+            done(err, null);
+        }
     }
-  }
 ));
 
 
