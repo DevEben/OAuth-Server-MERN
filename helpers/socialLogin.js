@@ -1,6 +1,6 @@
 // socialLogin.js
 const passport = require("passport");
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const GoogleStrategy = require("passport-google-oauth2").Strategy;
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel")
 
