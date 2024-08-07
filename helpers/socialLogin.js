@@ -54,32 +54,11 @@
 
 
 // helpers/socialLogin.js
-const express = require('express');
-const session = require('express-session');
 const passport = require('passport');
+const Twitter = require('twitter-api-v2').default;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const TwitterStrategy = require('passport-twitter').Strategy;
-const MongoStore = require("connect-mongo");
+// const TwitterStrategy = require('passport-twitter').Strategy;
 const userModel = require('../models/userModel'); // Import User model
-
-
-const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-app.use(session({
-    secret: process.env.SESSION_SECRET, 
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: process.env.DATABASE }),
-    cookie: { secure: true }
-}));
-
-// Initialize passport
-app.use(passport.initialize());
-// Integrate passport with session auth
-app.use(passport.session());
 
 
 // Serialize and Deserialize User
@@ -130,44 +109,69 @@ passport.use(new GoogleStrategy({
     }
 ));
 
-// Twitter OAuth Strategy
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_CONSUMER_KEY,
-    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: process.env.TWITTER_CALLBACK_URL,
-    includeEmail: true, // Request email access
-},
-    async (token, tokenSecret, profile, done) => {
-        try {
-            console.log("Twitter User Profile: ", profile); // Log the profile for debugging
-            const twitterId = profile.id;
-            const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
+// // Twitter OAuth Strategy
+// passport.use(new TwitterStrategy({
+//     consumerKey: process.env.TWITTER_CONSUMER_KEY,
+//     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+//     callbackURL: process.env.TWITTER_CALLBACK_URL,
+//     includeEmail: true, // Request email access
+// },
+//     async (token, tokenSecret, profile, done) => {
+//         try {
+//             console.log("Twitter User Profile: ", profile); // Log the profile for debugging
+//             const twitterId = profile.id;
+//             const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
 
-            const existingUser = await userModel.findOne({
-                $or: [{ email: email }, { twitterId: twitterId }]
-            });
+//             const existingUser = await userModel.findOne({
+//                 $or: [{ email: email }, { twitterId: twitterId }]
+//             });
 
-            if (existingUser) {
-                return done(null, existingUser); // Existing user found
-            }
+//             if (existingUser) {
+//                 return done(null, existingUser); // Existing user found
+//             }
 
-            // Create a new user
-            const newUser = new userModel({
-                twitterId: twitterId,
-                email: email,
-                firstName: profile.displayName.split(' ')[0],
-                lastName: profile.displayName.split(' ')[1] || '',
-                profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-                isVerified: true, // Assume email is verified if using Twitter
-            });
+//             // Create a new user
+//             const newUser = new userModel({
+//                 twitterId: twitterId,
+//                 email: email,
+//                 firstName: profile.displayName.split(' ')[0],
+//                 lastName: profile.displayName.split(' ')[1] || '',
+//                 profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+//                 isVerified: true, // Assume email is verified if using Twitter
+//             });
 
-            await newUser.save(); // Save the new user
-            done(null, newUser); // Return new user
-        } catch (err) {
-            console.error("Error during Twitter login: ", err); // Log any errors
-            done(err, null);
-        }
-    }
-));
+//             await newUser.save(); // Save the new user
+//             done(null, newUser); // Return new user
+//         } catch (err) {
+//             console.error("Error during Twitter login: ", err); // Log any errors
+//             done(err, null);
+//         }
+//     }
+// ));
 
-module.exports = passport;
+
+
+
+// Twitter OAuth 2.0 Client
+const twitterClient = new Twitter({
+    clientId: process.env.TWITTER_CLIENT_ID,
+    clientSecret: process.env.TWITTER_CLIENT_SECRET,
+    callbackUrl: process.env.TWITTER_CALLBACK_URL,
+  });
+  
+//   passport.serializeUser((user, done) => {
+//     done(null, user._id);
+//   });
+  
+//   passport.deserializeUser(async (id, done) => {
+//     try {
+//       const user = await userModel.findById(id);
+//       done(null, user);
+//     } catch (err) {
+//       done(err, null);
+//     }
+//   });
+  
+
+
+  module.exports = { twitterClient, passport };
