@@ -50,7 +50,10 @@
 // };
 
 
-// passport.js
+
+
+
+// helpers/socialLogin.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
@@ -58,14 +61,12 @@ const userModel = require('../models/userModel'); // Import User model
 
 // Serialize and Deserialize User
 passport.serializeUser((user, done) => {
-    done(null, user.email || user.twitterId); // Fallback to twitterId if email is missing
+    done(null, user._id); // Serialize the user by their unique MongoDB ID
 });
 
-passport.deserializeUser(async (identifier, done) => {
+passport.deserializeUser(async (id, done) => {
     try {
-        const user = await userModel.findOne({
-            $or: [{ email: identifier }, { twitterId: identifier }],
-        });
+        const user = await userModel.findById(id);
         done(null, user);
     } catch (err) {
         done(err, null);
@@ -89,22 +90,22 @@ passport.use(new GoogleStrategy({
             }
 
             // Create a new user
-            const newUser = await new userModel({
+            const newUser = new userModel({
                 googleId: profile.id,
                 email: profile.emails[0].value,
                 firstName: profile.name.givenName,
                 lastName: profile.name.familyName,
                 profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
                 isVerified: true, // Assume email is verified if using Google
-            }).save();
+            });
 
+            await newUser.save(); // Save the new user
             done(null, newUser); // Return new user
         } catch (err) {
             done(err, null);
         }
     }
 ));
-
 
 // Twitter OAuth Strategy
 passport.use(new TwitterStrategy({
@@ -115,31 +116,35 @@ passport.use(new TwitterStrategy({
 },
     async (token, tokenSecret, profile, done) => {
         try {
-            console.log("User Profile: ", profile);
-            // Check if the user exists
-            const email = profile.emails && profile.emails[0].value; // Ensure email exists
-            const existingUser = await userModel.findOne({ email });
+            console.log("Twitter User Profile: ", profile); // Log the profile for debugging
+            const twitterId = profile.id;
+            const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
+
+            const existingUser = await userModel.findOne({
+                $or: [{ email: email }, { twitterId: twitterId }]
+            });
 
             if (existingUser) {
                 return done(null, existingUser); // Existing user found
             }
 
             // Create a new user
-            const newUser = await new userModel({
-                twitterId: profile.id,
+            const newUser = new userModel({
+                twitterId: twitterId,
                 email: email,
                 firstName: profile.displayName.split(' ')[0],
-                lastName: profile.displayName.split(' ')[1] || '', // Handle single name
+                lastName: profile.displayName.split(' ')[1] || '',
                 profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
                 isVerified: true, // Assume email is verified if using Twitter
-            }).save();
+            });
 
+            await newUser.save(); // Save the new user
             done(null, newUser); // Return new user
         } catch (err) {
+            console.error("Error during Twitter login: ", err); // Log any errors
             done(err, null);
         }
     }
 ));
-
 
 module.exports = passport;

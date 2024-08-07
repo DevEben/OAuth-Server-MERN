@@ -54,23 +54,23 @@
 
 
 
-// routes/authRoutes.js
+// routers/userRouter.js
 const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel');
 const router = express.Router();
 
-const jwtSecret = process.env.SECRET;
+const jwtSecret = process.env.SECRET; 
 
 // Google Authentication Routes
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/auth/google/callback', passport.authenticate('google', {
     failureRedirect: '/auth/google/failure',
-    session: false
+    session: false // No session persistence
 }), (req, res) => {
-    const token = jwt.sign({ user: req.user }, jwtSecret, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' }); // Use only the ID for the token
     res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
 });
 
@@ -79,29 +79,26 @@ router.get('/auth/twitter', passport.authenticate('twitter'));
 
 router.get('/auth/twitter/callback', passport.authenticate('twitter', {
     failureRedirect: '/auth/twitter/failure',
-    session: true // Make sure session is enabled
+    session: true // Session enabled for Twitter
 }), (req, res) => {
-    const token = jwt.sign({ user: req.user }, jwtSecret, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
     res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
 });
 
-// Route to Get User Data with Token Authentication
-router.get('/auth/user', authenticateToken, (req, res) => {
-    if (req.user.email) {
-        userModel.findOne({ email: req.user.email })
-            .then(user => {
-                if (user) {
-                    return res.status(200).json({
-                        message: "User data retrieved successfully",
-                        data: user
-                    });
-                } else {
-                    return res.status(404).json({ message: "User not found" });
-                }
-            })
-            .catch(err => res.status(500).json({ message: "Server error", error: err }));
-    } else {
-        return res.status(401).json({ message: "User not authenticated" });
+// Get User Data with Token Authentication
+router.get('/auth/user', authenticateToken, async (req, res) => {
+    try {
+        const user = await userModel.findById(req.user.userId); // Use findById with userId
+        if (user) {
+            return res.status(200).json({
+                message: "User data retrieved successfully",
+                data: user
+            });
+        } else {
+            return res.status(404).json({ message: "User not found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Server error", error: err });
     }
 });
 
@@ -116,7 +113,7 @@ function authenticateToken(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, jwtSecret);
-        req.user = decoded.user;
+        req.user = decoded; // Set decoded token to req.user
         next(); // Proceed to the next middleware or route handler
     } catch (err) {
         res.status(401).json({ message: "Invalid token" });
@@ -133,12 +130,17 @@ router.get('/auth/twitter/failure', (req, res) => {
     res.send("Failed to authenticate using Twitter. Please try again.");
 });
 
-// A Logout Route
+
+// Logout Route
 router.get('/logout', (req, res) => {
     req.logout(err => {
-        if (err) { return res.status(500).json({ message: "Logout error", error: err }); }
+        if (err) {
+            return res.status(500).json({ message: "Logout error", error: err });
+        }
+        req.session.destroy(); // Destroy session after logout
         res.redirect('/');
     });
 });
+
 
 module.exports = router;

@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        unique: true,
+        sparse: true
     },
     password: {
         type: String,
@@ -20,8 +22,8 @@ const userSchema = new mongoose.Schema({
     profilePicture: {
         url: {
             type: String
-         },
-        public_id:{
+        },
+        public_id: {
             type: String
         }
     },
@@ -37,7 +39,17 @@ const userSchema = new mongoose.Schema({
     },
     revealPass: {
         type: String,
-    }
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    twitterId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
 
 }, { timestamps: true });
 
