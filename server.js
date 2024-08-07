@@ -26,7 +26,11 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(cookieParser());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// app.use(cookieParser());
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -34,9 +38,7 @@ app.use(session({
     saveUninitialized: true,
     store: MongoStore.create({ mongoUrl: process.env.DATABASE }),
     cookie: {
-        secure: true,
-        httpOnly: true,
-        maxAge: 60000,
+        secure: false,
     },
 }));
 
