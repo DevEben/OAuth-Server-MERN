@@ -59,6 +59,7 @@ const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
+const MongoStore = require("connect-mongo");
 const userModel = require('../models/userModel'); // Import User model
 
 
