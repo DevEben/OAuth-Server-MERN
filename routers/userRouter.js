@@ -78,7 +78,7 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 
 // Sign-in with Twitter
 router.get('/auth/twitter', (req, res) => {
-    const url = twitterClient.generateAuthUrl();
+    const url = twitterClient.generateOAuth2AuthUrl();
     res.redirect(url);
   });
   
