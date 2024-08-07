@@ -54,10 +54,32 @@
 
 
 // helpers/socialLogin.js
+const express = require('express');
+const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
 const userModel = require('../models/userModel'); // Import User model
+
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use(session({
+    secret: process.env.SESSION_SECRET, 
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.DATABASE }),
+    cookie: { secure: true }
+}));
+
+// Initialize passport
+app.use(passport.initialize());
+// Integrate passport with session auth
+app.use(passport.session());
+
 
 // Serialize and Deserialize User
 passport.serializeUser((user, done) => {
