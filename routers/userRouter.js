@@ -76,48 +76,62 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 });
 
 
-// Sign-in with Twitter
-router.get('/auth/twitter', (req, res) => {
-    const authUrl = twitterClient.generateAuthURL({
-        scope: ['tweet.read', 'tweet.write', 'users.read', 'follows.read'],
-    });
-    res.redirect(authUrl);
-  });
+// // Sign-in with Twitter
+// router.get('/auth/twitter', (req, res) => {
+//     const authUrl = twitterClient.generateAuthURL({
+//         scope: ['tweet.read', 'tweet.write', 'users.read', 'follows.read'],
+//     });
+//     res.redirect(authUrl);
+//   });
   
-  // Twitter Callback
-  router.get('/twitter/callback', async (req, res) => {
-    const { code } = req.query;
-    try {
-      const { accessToken, refreshToken, user } = await twitterClient.login(code);
-      console.log("Twitter UserInfo: ", user);
+//   // Twitter Callback
+//   router.get('/twitter/callback', async (req, res) => {
+//     const { code } = req.query;
+//     try {
+//       const { accessToken, refreshToken, user } = await twitterClient.login(code);
+//       console.log("Twitter UserInfo: ", user);
   
-      let existingUser = await userModel.findOne({ twitterId: user.id });
-      if (existingUser) {
-        existingUser.accessToken = accessToken;
-        existingUser.refreshToken = refreshToken;
-        await existingUser.save();
-      } else {
-        existingUser = new userModel({
-          twitterId: user.id,
-          name: user.name,
-          firstName: "",
-          lastName: "",
-          profilePicture: { url: "", public_id: Date.now() },
-          isVerified: true,
-          email: user.email,
-          accessToken,
-          refreshToken,
-        });
-        await existingUser.save();
-      }
+//       let existingUser = await userModel.findOne({ twitterId: user.id });
+//       if (existingUser) {
+//         existingUser.accessToken = accessToken;
+//         existingUser.refreshToken = refreshToken;
+//         await existingUser.save();
+//       } else {
+//         existingUser = new userModel({
+//           twitterId: user.id,
+//           name: user.name,
+//           firstName: "",
+//           lastName: "",
+//           profilePicture: { url: "", public_id: Date.now() },
+//           isVerified: true,
+//           email: user.email,
+//           accessToken,
+//           refreshToken,
+//         });
+//         await existingUser.save();
+//       }
   
-      req.session.user = existingUser; // Store user info in session
-      const token = jwt.sign({ userId: existingUser._id }, jwtSecret, { expiresIn: '1h' });
+//       req.session.user = existingUser; // Store user info in session
+//       const token = jwt.sign({ userId: existingUser._id }, jwtSecret, { expiresIn: '1h' });
+//       res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+//     } catch (error) {
+//       console.error("Error during Twitter callback:", error);
+//       res.status(500).send("An error occurred during authentication.");
+//     }
+//   });
+
+
+// Twitter Authentication Routes
+router.get('/auth/twitter', passport.authenticate('twitter', {
+    scope: ['tweet.read', 'users.read'], // Refined scopes
+  }));
+  
+  router.get('/auth/twitter/callback', passport.authenticate('twitter', {
+      failureRedirect: '/auth/twitter/failure',
+      session: false
+  }), (req, res) => {
+      const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
       res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
-    } catch (error) {
-      console.error("Error during Twitter callback:", error);
-      res.status(500).send("An error occurred during authentication.");
-    }
   });
   
 
@@ -126,7 +140,7 @@ router.get('/auth/twitter', (req, res) => {
 // Get User Data with Token Authentication
 router.get('/auth/user', authenticateToken, async (req, res) => {
     try {
-        const user = await userModel.findById(req.user.userId || req.session.user._id); // Use findById with userId
+        const user = await userModel.findById(req.user.userId); // Use findById with userId
         if (user) {
             return res.status(200).json({
                 message: "User data retrieved successfully",
@@ -163,10 +177,10 @@ router.get('/auth/google/failure', (req, res) => {
     res.send("Failed to authenticate using Google. Please try again.");
 });
 
-// // Twitter Failure Route
-// router.get('/auth/twitter/failure', (req, res) => {
-//     res.send("Failed to authenticate using Twitter. Please try again.");
-// });
+// Twitter Failure Route
+router.get('/auth/twitter/failure', (req, res) => {
+    res.send("Failed to authenticate using Twitter. Please try again.");
+});
 
 
 // Logout Route
