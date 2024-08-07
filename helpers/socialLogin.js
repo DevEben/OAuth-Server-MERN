@@ -55,7 +55,7 @@
 
 // helpers/socialLogin.js
 const passport = require('passport');
-const { OAuth2Client } = require('twitter-api-v2');
+const TwitterApi = require('twitter-api-v2').default;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // const TwitterStrategy = require('passport-twitter').Strategy;
 const userModel = require('../models/userModel'); // Import User model
@@ -153,7 +153,7 @@ passport.use(new GoogleStrategy({
 
 
 // Twitter OAuth 2.0 Client
-const twitterClient = new OAuth2Client({
+const twitterClient = new TwitterApi({
     clientId: process.env.TWITTER_CLIENT_ID,
     clientSecret: process.env.TWITTER_CLIENT_SECRET,
     callbackUrl: process.env.TWITTER_CALLBACK_URL,
