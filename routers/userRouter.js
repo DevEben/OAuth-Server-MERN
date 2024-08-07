@@ -87,6 +87,7 @@ router.get('/auth/twitter', (req, res) => {
     const { code } = req.query;
     try {
       const { accessToken, refreshToken, user } = await twitterClient.login(code);
+      console.log("Twitter UserInfo: ", user);
   
       let existingUser = await userModel.findOne({ twitterId: user.id });
       if (existingUser) {
