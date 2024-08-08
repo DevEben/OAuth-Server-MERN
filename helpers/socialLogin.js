@@ -163,6 +163,7 @@ passport.use(new TwitterStrategy({
         scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
       },
       async (accessToken, refreshToken, profile, done) => {
+        console.log('Success!', { accessToken, refreshToken });
         try {
             console.log("Twitter User Profile: ", profile); // Log the profile for debugging
             const twitterId = profile.id;
