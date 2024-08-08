@@ -138,7 +138,7 @@ router.get('/auth/twitter', passport.authenticate('twitter'));
 
 router.get('/auth/twitter/callback', passport.authenticate('twitter', {
     failureRedirect: '/auth/twitter/failure',
-    session: false // No session persistence
+    session: true
 }), (req, res) => {
     try {
         // // Get the OAuth tokens from the query parameters

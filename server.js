@@ -3,7 +3,8 @@ const express = require("express");
 const passport = require("passport");
 const session = require("express-session");
 const mongoose = require("mongoose");
-const MongoStore = require("connect-mongo");
+// const MongoStore = require("connect-mongo");
+const sessionStore = require('./helpers/sessionStore');
 const cors = require("cors");
 
 require("./helpers/socialLogin"); // Make sure this points to the correct file
@@ -42,12 +43,11 @@ mongoose.connect(process.env.DATABASE, {
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.DATABASE, 
-      collectionName: 'sessions', // Optional: Specify the collection name for sessions
-      ttl: 24 * 60 * 60, // Optional: Set TTL for session expiration in seconds (1 day)
-      autoRemove: 'native', // Optional: Automatically remove expired sessions
-    }),
+    store: {
+        get: sessionStore.get,
+        set: sessionStore.set,
+        destroy: sessionStore.destroy,
+    },
     cookie: {
       secure: true, // Enable secure cookies in production
       maxAge: 1000 * 60 * 60 * 24, // 1 day
