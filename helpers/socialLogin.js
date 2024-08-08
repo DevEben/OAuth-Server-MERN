@@ -122,43 +122,47 @@ passport.use(new TwitterStrategy({
     consumerKey: process.env.TWITTER_CONSUMER_KEY,
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
     callbackURL: process.env.TWITTER_CALLBACK_URL,
-    includeEmail: true, // Request email access
-    passReqToCallback: true,
-    // tokenStore: tokenStore
-},
-    async (token, tokenSecret, profile, done) => {
-        try {
-            console.log("Twitter User Profile: ", profile); // Log the profile for debugging
-            const twitterId = profile.id;
-            const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
-
-            const existingUser = await userModel.findOne({
-                $or: [{ email: email }, { twitterId: twitterId }]
-            });
-
-            if (existingUser) {
-                return done(null, existingUser); // Existing user found
-            }
-
-            // Create a new user
-            const newUser = new userModel({
-                twitterId: twitterId,
-                email: email,
-                firstName: profile.displayName.split(' ')[0],
-                lastName: profile.displayName.split(' ')[1] || '',
-                profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-                isVerified: true, // Assume email is verified if using Twitter
-            });
-
-            await newUser.save(); // Save the new user
-            done(null, newUser); // Return new user
-        } catch (err) {
-            console.error("Error during Twitter login: ", err); // Log any errors
-            done(err, null);
-        }
+    includeEmail: true,
+    passReqToCallback: true, // Pass the request object to the callback
+  }, async (req, token, tokenSecret, profile, done) => {
+    try {
+      console.log("Twitter User Profile: ", profile); // Log the profile for debugging
+      const twitterId = profile.id;
+      const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
+  
+      // Check if the user exists
+      const existingUser = await User.findOne({
+        $or: [{ email: email }, { twitterId: twitterId }]
+      });
+  
+      if (existingUser) {
+        return done(null, existingUser); // Existing user found
+      }
+  
+      // Store the request token and verifier in the user's session
+      req.session.twitter = {
+        requestToken: token,
+        requestTokenSecret: tokenSecret,
+      };
+  
+      // Create a new user
+      const newUser = new User({
+        twitterId: twitterId,
+        email: email,
+        firstName: profile.displayName.split(' ')[0],
+        lastName: profile.displayName.split(' ')[1] || '',
+        profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+        isVerified: true, // Assume email is verified if using Twitter
+        requestToken: token,
+        requestTokenSecret: tokenSecret,
+      });
+  
+      await newUser.save(); // Save the new user
+      return done(null, newUser); // Return new user
+    } catch (err) {
+      return done(err);
     }
-));
-
+  }));
 
 
 

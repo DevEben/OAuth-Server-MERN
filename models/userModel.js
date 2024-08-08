@@ -50,6 +50,12 @@ const userSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
+    requestToken: {
+        type: String
+    },
+    requestTokenSecret: {
+        type: String
+    },
 
 }, { timestamps: true });
 

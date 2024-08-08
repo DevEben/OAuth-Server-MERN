@@ -24,25 +24,34 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Middleware for parsing JSON and URL-encoded data
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-// Session Management
-app.use(session({
+// MongoDB connection
+mongoose.connect(process.env.DATABASE, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.error('MongoDB connection error:', err));
+  
+  // Middleware
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  
+  // Session configuration using MongoStore
+  app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false, // Set to false to prevent uninitialized sessions from being saved
+    saveUninitialized: false,
     store: MongoStore.create({
-        mongoUrl: process.env.DATABASE,
-        dbName: 'SocialLogin-DB',
-        collectionName: 'sessions',
+      mongoUrl: process.env.DATABASE, 
+      collectionName: 'sessions', // Optional: Specify the collection name for sessions
+      ttl: 24 * 60 * 60, // Optional: Set TTL for session expiration in seconds (1 day)
+      autoRemove: 'native', // Optional: Automatically remove expired sessions
     }),
     cookie: {
-        secure: true, // Secure cookies in production
-        httpOnly: true, // Prevents client-side JS from reading the cookie
+      secure: true, // Enable secure cookies in production
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
-}));
+  }));
 
 // Initialize Passport and manage sessions
 app.use(passport.initialize());

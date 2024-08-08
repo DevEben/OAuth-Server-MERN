@@ -124,30 +124,30 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 
 
 // Twitter Authentication Routes
-router.get('/auth/twitter', (req, res, next) => {
-    req.session.state = Math.random().toString(36).substr(2, 9); // Generate a random state
-    passport.authenticate('twitter', {
-        state: req.session.state,
-    })(req, res, next);
-});
+// router.get('/auth/twitter', (req, res, next) => {
+//     req.session.state = Math.random().toString(36).substr(2, 9); // Generate a random state
+//     passport.authenticate('twitter', {
+//         state: req.session.state,
+//     })(req, res, next);
+// });
 
-// router.get('/auth/twitter', passport.authenticate('twitter'));
+router.get('/auth/twitter', passport.authenticate('twitter'));
 // router.get('/auth/twitter', passport.authenticate('twitter', {
 //     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
 //   }));
 
 router.get('/auth/twitter/callback', passport.authenticate('twitter', {
     failureRedirect: '/auth/twitter/failure',
-    session: true,
+    session: false // No session persistence
 }), (req, res) => {
     try {
-        // Get the OAuth tokens from the query parameters
-        const oauthToken = req.query.oauth_token;
-        const oauthVerifier = req.query.oauth_verifier;
+        // // Get the OAuth tokens from the query parameters
+        // const oauthToken = req.query.oauth_token;
+        // const oauthVerifier = req.query.oauth_verifier;
 
-        // Store the OAuth tokens in the sessions collection
-        req.session.oauthToken = oauthToken;
-        req.session.oauthVerifier = oauthVerifier;
+        // // Store the OAuth tokens in the sessions collection
+        // req.session.oauthToken = oauthToken;
+        // req.session.oauthVerifier = oauthVerifier;
 
         const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
         console.log(token)
