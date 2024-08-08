@@ -196,12 +196,15 @@ passport.use(new GoogleStrategy({
 //   );
 
 
-  const twitterClient = new TwitterApi({
-    clientId: process.env.TWITTER_CLIENT_ID,
-    clientSecret: process.env.TWITTER_CLIENT_SECRET,
+const twitterClient = new TwitterApi({
+    appKey: process.env.TWITTER_CLIENT_ID,
+    appSecret: process.env.TWITTER_CLIENT_SECRET,
+    accessToken: process.env.TWITTER_ACCESS_TOKEN,
+    accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
   });
-
   
+
+
   module.exports = { twitterClient };
   
 
