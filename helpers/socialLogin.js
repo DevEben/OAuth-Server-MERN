@@ -56,9 +56,10 @@
 // helpers/socialLogin.js
 const passport = require('passport');
 // const { TwitterApi } = require('twitter-api-v2');
-const TwitterApi = require('twitter-api-v2').default;
+// const TwitterApi = require('twitter-api-v2').default;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // const { Strategy: TwitterStrategy } = require('@superfaceai/passport-twitter-oauth2');
+const TwitterStrategy = require('passport-twitter-oauth2').Strategy;
 const userModel = require('../models/userModel'); // Import User model
 
 
@@ -153,59 +154,57 @@ passport.use(new GoogleStrategy({
 
 
 
-// // Twitter OAuth2 Strategy
-// passport.use(
-//     new TwitterStrategy(
-//       {
-//         clientID: process.env.TWITTER_CLIENT_ID,
-//         clientSecret: process.env.TWITTER_CLIENT_SECRET,
-//         clientType: 'confidential',
-//         callbackURL: process.env.TWITTER_CALLBACK_URL,
-//       },
-//       async (accessToken, refreshToken, profile, done) => {
-//         try {
-//             console.log("Twitter User Profile: ", profile); // Log the profile for debugging
-//             const twitterId = profile.id;
-//             const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
+// Twitter OAuth2 Strategy
+passport.use(new TwitterStrategy({
+        clientID: process.env.TWITTER_CLIENT_ID,
+        clientSecret: process.env.TWITTER_CLIENT_SECRET,
+        // clientType: 'confidential',
+        callbackURL: process.env.TWITTER_CALLBACK_URL,
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+            console.log("Twitter User Profile: ", profile); // Log the profile for debugging
+            const twitterId = profile.id;
+            const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
 
-//             const existingUser = await userModel.findOne({
-//                 $or: [{ email: email }, { twitterId: twitterId }]
-//             });
+            const existingUser = await userModel.findOne({
+                $or: [{ email: email }, { twitterId: twitterId }]
+            });
 
-//             if (existingUser) {
-//                 return done(null, existingUser); // Existing user found
-//             }
+            if (existingUser) {
+                return done(null, existingUser); // Existing user found
+            }
 
-//             // Create a new user
-//             const newUser = new userModel({
-//                 twitterId: twitterId,
-//                 email: email,
-//                 firstName: profile.displayName.split(' ')[0],
-//                 lastName: profile.displayName.split(' ')[1] || '',
-//                 profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-//                 isVerified: true, // Assume email is verified if using Twitter
-//             });
+            // Create a new user
+            const newUser = new userModel({
+                twitterId: twitterId,
+                email: email,
+                firstName: profile.displayName.split(' ')[0],
+                lastName: profile.displayName.split(' ')[1] || '',
+                profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+                isVerified: true, // Assume email is verified if using Twitter
+            });
 
-//             await newUser.save(); // Save the new user
-//           return done(null, user);
-//         } catch (err) {
-//           return done(err);
-//         }
-//       }
-//     )
-//   );
+            await newUser.save(); // Save the new user
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
+      }
+    )
+  );
 
 
-const twitterClient = new TwitterApi({
-    appKey: process.env.TWITTER_CLIENT_ID,
-    appSecret: process.env.TWITTER_CLIENT_SECRET,
-    accessToken: process.env.TWITTER_ACCESS_TOKEN,
-    accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-  });
+// const twitterClient = new TwitterApi({
+//     appKey: process.env.TWITTER_CLIENT_ID,
+//     appSecret: process.env.TWITTER_CLIENT_SECRET,
+//     accessToken: process.env.TWITTER_ACCESS_TOKEN,
+//     accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+//   });
   
 
 
-  module.exports = { twitterClient };
+//   module.exports = { twitterClient };
   
 
   module.exports = passport;
