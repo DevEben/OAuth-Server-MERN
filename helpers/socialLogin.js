@@ -62,6 +62,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // const TwitterStrategy = require('passport-twitter-oauth2').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
 const userModel = require('../models/userModel'); // Import User model
+// const OAuthTokenStore = require('oauth-token-store').default;
+
 
 
 // Serialize and Deserialize User
@@ -112,13 +114,17 @@ passport.use(new GoogleStrategy({
     }
 ));
 
+// const tokenStore = new OAuthTokenStore();
+
+
 // Twitter OAuth Strategy
 passport.use(new TwitterStrategy({
     consumerKey: process.env.TWITTER_CONSUMER_KEY,
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
     callbackURL: process.env.TWITTER_CALLBACK_URL,
     includeEmail: true, // Request email access
-    session: true, // Enable session support
+    passReqToCallback: true,
+    // tokenStore: tokenStore
 },
     async (token, tokenSecret, profile, done) => {
         try {
