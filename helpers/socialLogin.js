@@ -55,8 +55,8 @@
 
 // helpers/socialLogin.js
 const passport = require('passport');
-const { TwitterApi } = require('twitter-api-v2');
-// const TwitterApi = require('twitter-api-v2').default;
+// const { TwitterApi } = require('twitter-api-v2');
+const TwitterApi = require('twitter-api-v2').default;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // const { Strategy: TwitterStrategy } = require('@superfaceai/passport-twitter-oauth2');
 const userModel = require('../models/userModel'); // Import User model
