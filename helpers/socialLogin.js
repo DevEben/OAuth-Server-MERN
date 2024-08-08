@@ -118,6 +118,7 @@ passport.use(new TwitterStrategy({
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
     callbackURL: process.env.TWITTER_CALLBACK_URL,
     includeEmail: true, // Request email access
+    session: true, // Enable session support
 },
     async (token, tokenSecret, profile, done) => {
         try {

@@ -124,7 +124,14 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 
 
 // Twitter Authentication Routes
-router.get('/auth/twitter', passport.authenticate('twitter'));
+router.get('/auth/twitter', (req, res, next) => {
+    req.session.state = Math.random().toString(36).substr(2, 9); // Generate a random state
+    passport.authenticate('twitter', {
+      state: req.session.state,
+    })(req, res, next);
+  });
+  
+// router.get('/auth/twitter', passport.authenticate('twitter'));
 // router.get('/auth/twitter', passport.authenticate('twitter', {
 //     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
 //   }));
