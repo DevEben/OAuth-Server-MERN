@@ -43,11 +43,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: {
-        get: sessionStore.get,
-        set: sessionStore.set,
-        destroy: sessionStore.destroy,
-    },
+    store: sessionStore,
     cookie: {
         secure: true, // Enable secure cookies in production
         maxAge: 1000 * 60 * 60 * 24, // 1 day
@@ -57,6 +53,10 @@ app.use(session({
 // Initialize Passport and manage sessions
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.get('/', (req, res) => {
+    res.send(<h3>Welcome to Spiral Tech Test Api</h3>);
+});
 
 // Use routes
 app.use("/", routes);
