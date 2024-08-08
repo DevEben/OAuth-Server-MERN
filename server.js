@@ -33,10 +33,12 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false, // Set to false to prevent uninitialized sessions from being saved
-    store: MongoStore.create({ mongoUrl: process.env.DATABASE }),
-    dbName: 'SocialLogin-DB',
-    collectionName: 'sessions',
-    cookie: { 
+    store: MongoStore.create({
+        mongoUrl: process.env.DATABASE,
+        dbName: 'SocialLogin-DB',
+        collectionName: 'sessions',
+    }),
+    cookie: {
         secure: true, // Secure cookies in production
         httpOnly: true, // Prevents client-side JS from reading the cookie
     },
