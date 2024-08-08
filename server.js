@@ -2,6 +2,7 @@ require('./dbConfig/dbConfig');
 const express = require("express");
 const passport = require("passport");
 const session = require("express-session");
+const mongoose = require("mongoose");
 const MongoStore = require("connect-mongo");
 const cors = require("cors");
 
