@@ -59,7 +59,8 @@ const passport = require('passport');
 // const TwitterApi = require('twitter-api-v2').default;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // const { Strategy: TwitterStrategy } = require('@superfaceai/passport-twitter-oauth2');
-const TwitterStrategy = require('passport-twitter-oauth2').Strategy;
+// const TwitterStrategy = require('passport-twitter-oauth2').Strategy;
+const TwitterStrategy = require('passport-twitter').Strategy;
 const userModel = require('../models/userModel'); // Import User model
 
 
@@ -111,59 +112,14 @@ passport.use(new GoogleStrategy({
     }
 ));
 
-// // Twitter OAuth Strategy
-// passport.use(new TwitterStrategy({
-//     consumerKey: process.env.TWITTER_CONSUMER_KEY,
-//     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-//     callbackURL: process.env.TWITTER_CALLBACK_URL,
-//     includeEmail: true, // Request email access
-// },
-//     async (token, tokenSecret, profile, done) => {
-//         try {
-//             console.log("Twitter User Profile: ", profile); // Log the profile for debugging
-//             const twitterId = profile.id;
-//             const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
-
-//             const existingUser = await userModel.findOne({
-//                 $or: [{ email: email }, { twitterId: twitterId }]
-//             });
-
-//             if (existingUser) {
-//                 return done(null, existingUser); // Existing user found
-//             }
-
-//             // Create a new user
-//             const newUser = new userModel({
-//                 twitterId: twitterId,
-//                 email: email,
-//                 firstName: profile.displayName.split(' ')[0],
-//                 lastName: profile.displayName.split(' ')[1] || '',
-//                 profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-//                 isVerified: true, // Assume email is verified if using Twitter
-//             });
-
-//             await newUser.save(); // Save the new user
-//             done(null, newUser); // Return new user
-//         } catch (err) {
-//             console.error("Error during Twitter login: ", err); // Log any errors
-//             done(err, null);
-//         }
-//     }
-// ));
-
-
-
-
-// Twitter OAuth2 Strategy
+// Twitter OAuth Strategy
 passport.use(new TwitterStrategy({
-        clientID: process.env.TWITTER_CLIENT_ID,
-        clientSecret: process.env.TWITTER_CLIENT_SECRET,
-        clientType: 'confidential',
-        callbackURL: process.env.TWITTER_CALLBACK_URL,
-        scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        console.log('Success!', { accessToken, refreshToken });
+    consumerKey: process.env.TWITTER_CONSUMER_KEY,
+    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+    callbackURL: process.env.TWITTER_CALLBACK_URL,
+    includeEmail: true, // Request email access
+},
+    async (token, tokenSecret, profile, done) => {
         try {
             console.log("Twitter User Profile: ", profile); // Log the profile for debugging
             const twitterId = profile.id;
@@ -188,13 +144,58 @@ passport.use(new TwitterStrategy({
             });
 
             await newUser.save(); // Save the new user
-          return done(null, user);
+            done(null, newUser); // Return new user
         } catch (err) {
-          return done(err);
+            console.error("Error during Twitter login: ", err); // Log any errors
+            done(err, null);
         }
-      }
-    )
-  );
+    }
+));
+
+
+
+
+// // Twitter OAuth2 Strategy
+// passport.use(new TwitterStrategy({
+//         clientID: process.env.TWITTER_CLIENT_ID,
+//         clientSecret: process.env.TWITTER_CLIENT_SECRET,
+//         clientType: 'confidential',
+//         callbackURL: process.env.TWITTER_CALLBACK_URL,
+//         scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
+//       },
+//       async (accessToken, refreshToken, profile, done) => {
+//         console.log('Success!', { accessToken, refreshToken });
+//         try {
+//             console.log("Twitter User Profile: ", profile); // Log the profile for debugging
+//             const twitterId = profile.id;
+//             const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
+
+//             const existingUser = await userModel.findOne({
+//                 $or: [{ email: email }, { twitterId: twitterId }]
+//             });
+
+//             if (existingUser) {
+//                 return done(null, existingUser); // Existing user found
+//             }
+
+//             // Create a new user
+//             const newUser = new userModel({
+//                 twitterId: twitterId,
+//                 email: email,
+//                 firstName: profile.displayName.split(' ')[0],
+//                 lastName: profile.displayName.split(' ')[1] || '',
+//                 profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
+//                 isVerified: true, // Assume email is verified if using Twitter
+//             });
+
+//             await newUser.save(); // Save the new user
+//           return done(null, user);
+//         } catch (err) {
+//           return done(err);
+//         }
+//       }
+//     )
+//   );
 
 
 // const twitterClient = new TwitterApi({

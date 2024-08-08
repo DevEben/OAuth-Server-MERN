@@ -124,13 +124,14 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 
 
 // Twitter Authentication Routes
-router.get('/auth/twitter', passport.authenticate('twitter', {
-    scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
-  }));
+router.get('/auth/twitter', passport.authenticate('twitter'));
+// router.get('/auth/twitter', passport.authenticate('twitter', {
+//     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
+//   }));
   
   router.get('/auth/twitter/callback', passport.authenticate('twitter', {
       failureRedirect: '/auth/twitter/failure',
-      session: true,
+    //   session: true,
   }), (req, res) => {
     try {
       const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
