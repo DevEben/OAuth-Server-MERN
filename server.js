@@ -30,16 +30,16 @@ app.use(cors(corsOptions));
 mongoose.connect(process.env.DATABASE, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  })
+})
     .then(() => console.log('MongoDB connected'))
     .catch((err) => console.error('MongoDB connection error:', err));
-  
-  // Middleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  
-  // Session configuration using MongoStore
-  app.use(session({
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Session configuration using MongoStore
+app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -49,10 +49,10 @@ mongoose.connect(process.env.DATABASE, {
         destroy: sessionStore.destroy,
     },
     cookie: {
-      secure: true, // Enable secure cookies in production
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+        secure: true, // Enable secure cookies in production
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
-  }));
+}));
 
 // Initialize Passport and manage sessions
 app.use(passport.initialize());
