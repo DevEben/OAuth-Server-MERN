@@ -131,7 +131,7 @@ router.get('/auth/twitter', passport.authenticate('twitter'));
   
   router.get('/auth/twitter/callback', passport.authenticate('twitter', {
       failureRedirect: '/auth/twitter/failure',
-    //   session: true,
+      session: true,
   }), (req, res) => {
     try {
       const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
