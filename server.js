@@ -55,7 +55,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/', (req, res) => {
-    res.send(<h3>Welcome to Spiral Tech Test Api</h3>);
+    res.send(`<h3>Welcome to Spiral Tech Test Api</h3>`);
 });
 
 // Use routes
