@@ -158,8 +158,9 @@ passport.use(new GoogleStrategy({
 passport.use(new TwitterStrategy({
         clientID: process.env.TWITTER_CLIENT_ID,
         clientSecret: process.env.TWITTER_CLIENT_SECRET,
-        // clientType: 'confidential',
+        clientType: 'confidential',
         callbackURL: process.env.TWITTER_CALLBACK_URL,
+        scope: ['tweet.read', 'users.read', 'email'],
       },
       async (accessToken, refreshToken, profile, done) => {
         try {

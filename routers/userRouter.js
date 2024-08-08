@@ -125,16 +125,21 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 
 // Twitter Authentication Routes
 router.get('/auth/twitter', passport.authenticate('twitter', {
-    scope: ['tweet.read', 'users.read'], // Refined scopes
+    scope: ['tweet.read', 'users.read', 'email'],
   }));
   
   router.get('/auth/twitter/callback', passport.authenticate('twitter', {
       failureRedirect: '/auth/twitter/failure',
-      session: true,
+    //   session: true,
   }), (req, res) => {
+    try {
       const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
       console.log(token)
       res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error occurred during authentication');
+    };
   });
   
 
