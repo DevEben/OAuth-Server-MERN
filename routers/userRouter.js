@@ -58,7 +58,7 @@
 const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
-const { twitterClient } = require('../helpers/socialLogin');
+// const { twitterClient } = require('../helpers/socialLogin');
 const userModel = require('../models/userModel');
 const router = express.Router();
 
@@ -125,7 +125,7 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 
 // Twitter Authentication Routes
 router.get('/auth/twitter', passport.authenticate('twitter', {
-    scope: ['tweet.read', 'users.read', 'email'],
+    scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
   }));
   
   router.get('/auth/twitter/callback', passport.authenticate('twitter', {
