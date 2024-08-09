@@ -131,18 +131,18 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 //     })(req, res, next);
 // });
 
-        // // Get the OAuth tokens from the query parameters
-        // const oauthToken = req.query.oauth_token;
-        // const oauthVerifier = req.query.oauth_verifier;
+// // Get the OAuth tokens from the query parameters
+// const oauthToken = req.query.oauth_token;
+// const oauthVerifier = req.query.oauth_verifier;
 
-        // // Store the OAuth tokens in the sessions collection
-        // req.session.oauthToken = oauthToken;
-        // req.session.oauthVerifier = oauthVerifier;
+// // Store the OAuth tokens in the sessions collection
+// req.session.oauthToken = oauthToken;
+// req.session.oauthVerifier = oauthVerifier;
 
 // Route to initiate Twitter login
 router.get('/auth/twitter',
     passport.authenticate('twitter', { session: true }) // Use session as needed
-  );
+);
 // router.get('/auth/twitter', passport.authenticate('twitter', {
 //     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
 //   }));
@@ -163,13 +163,17 @@ router.get('/auth/twitter',
 
 // Callback route to handle Twitter's response
 router.get('/auth/twitter/callback',
-    passport.authenticate('twitter', { failureRedirect: '/auth/twitter/failure', session: true }), 
+    passport.authenticate('twitter', { failureRedirect: '/auth/twitter/failure', session: true }),
     (req, res) => {
-      // Successful authentication
-      const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
-      return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+        // Check if there is an authentication error
+        if (req.query.error) {
+            console.error('Twitter authentication error:', req.query.error);
+        }
+        // Successful authentication
+        const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
+        return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
     }
-  );
+);
 
 
 
