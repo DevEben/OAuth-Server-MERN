@@ -167,6 +167,29 @@ async (accessToken, refreshToken, profile, done) => {
 }));
 
 
+  //Added logging to capture more information about the flow
+  passport.use(new TwitterOAuth2Strategy({
+    clientID: process.env.TWITTER_CLIENT_ID,
+    clientSecret: process.env.TWITTER_CLIENT_SECRET,
+    callbackURL: "https://spiraltech-api.onrender.com/auth/twitter/callback",
+    scope: ['tweet.read', 'users.read', 'offline.access'],
+    state: true
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      console.log("Access Token: ", accessToken);
+      console.log("Refresh Token: ", refreshToken);
+      console.log("Profile: ", profile);
+  
+      // Your logic here...
+  
+    } catch (err) {
+      console.error("Error during authentication: ", err);
+      return done(err);
+    }
+  }));
+
+
 // // Twitter OAuth2 Strategy
 // passport.use(new TwitterStrategy({
 //         clientID: process.env.TWITTER_CLIENT_ID,
