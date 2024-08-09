@@ -39,15 +39,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session configuration using MongoStore
+// app.use(session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//     store: sessionStore,
+//     cookie: {
+//         secure: true, // Enable secure cookies in production
+//         maxAge: 1000 * 60 * 60 * 24, // 1 day
+//     },
+// }));
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false,
-    store: sessionStore,
-    cookie: {
-        secure: true, // Enable secure cookies in production
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true if using HTTPS
 }));
 
 // Initialize Passport and manage sessions
