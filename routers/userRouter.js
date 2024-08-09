@@ -141,7 +141,7 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 
 // Route to initiate Twitter login
 router.get('/auth/twitter',
-    passport.authenticate('twitter', { scope: ['tweet.read', 'users.read', 'offline.access'], session: true }) // Use session as needed
+    passport.authenticate('twitter', { session: true }) // Use session as needed
   );
 // router.get('/auth/twitter', passport.authenticate('twitter', {
 //     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
@@ -163,7 +163,7 @@ router.get('/auth/twitter',
 
 // Callback route to handle Twitter's response
 router.get('/auth/twitter/callback',
-    passport.authenticate('twitter', { failureRedirect: '/auth/twitter/failure', scope: ['tweet.read', 'users.read', 'offline.access'], session: true }), 
+    passport.authenticate('twitter', { failureRedirect: '/auth/twitter/failure', session: true }), 
     (req, res) => {
       // Successful authentication
       const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
