@@ -160,7 +160,7 @@ router.get('/auth/twitter', passport.authenticate('twitter'));
 
 
 // Twitter OAuth Callback
-app.get('/auth/twitter/callback', (req, res, next) => {
+router.get('/auth/twitter/callback', (req, res, next) => {
     passport.authenticate('twitter', (err, user, info) => {
       if (err) {
         console.error('Twitter callback error:', err);
