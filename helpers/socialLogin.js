@@ -59,8 +59,8 @@ const passport = require('passport');
 // const TwitterApi = require('twitter-api-v2').default;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // const { Strategy: TwitterStrategy } = require('@superfaceai/passport-twitter-oauth2');
-// const TwitterStrategy = require('passport-twitter-oauth2').Strategy;
-const TwitterStrategy = require('passport-twitter').Strategy;
+// const TwitterStrategy = require('passport-twitter').Strategy;
+const TwitterOAuth2Strategy = require('passport-twitter-oauth2');
 const userModel = require('../models/userModel'); // Import User model
 // const OAuthTokenStore = require('oauth-token-store').default;
 
@@ -118,13 +118,15 @@ passport.use(new GoogleStrategy({
 
 
 // Twitter OAuth Strategy
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_CONSUMER_KEY,
-    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: process.env.TWITTER_CALLBACK_URL,
-    includeEmail: true,
-    passReqToCallback: true, // Pass the request object to the callback
-  }, async (req, token, tokenSecret, profile, done) => {
+// Set up the Twitter OAuth 2.0 strategy
+passport.use(new TwitterOAuth2Strategy({
+  clientID: process.env.TWITTER_CLIENT_ID, // Use OAuth 2.0 Client ID
+  clientSecret: process.env.TWITTER_CLIENT_SECRET, // Use OAuth 2.0 Client Secret
+  callbackURL: "https://spiraltech-api.onrender.com/auth/twitter/callback",
+  scope: ['tweet.read', 'users.read', 'offline.access'], // Define scopes as needed
+  state: true // Enable state parameter for additional security
+},
+async (accessToken, refreshToken, profile, done) => {
     try {
       console.log("Twitter User Profile: ", profile); // Log the profile for debugging
       const twitterId = profile.id;
@@ -139,12 +141,6 @@ passport.use(new TwitterStrategy({
         return done(null, existingUser); // Existing user found
       }
   
-      // Store the request token and verifier in the user's session
-      req.session.twitter = {
-        requestToken: token,
-        requestTokenSecret: tokenSecret,
-      };
-  
       // Create a new user
       const newUser = new userModel({
         twitterId: twitterId,
@@ -153,8 +149,6 @@ passport.use(new TwitterStrategy({
         lastName: profile.displayName.split(' ')[1] || '',
         profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
         isVerified: true, // Assume email is verified if using Twitter
-        requestToken: token,
-        requestTokenSecret: tokenSecret,
       });
   
       await newUser.save(); // Save the new user
