@@ -131,7 +131,7 @@ passport.use(new TwitterStrategy({
       const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
   
       // Check if the user exists
-      const existingUser = await User.findOne({
+      const existingUser = await userModel.findOne({
         $or: [{ email: email }, { twitterId: twitterId }]
       });
   
@@ -146,7 +146,7 @@ passport.use(new TwitterStrategy({
       };
   
       // Create a new user
-      const newUser = new User({
+      const newUser = new userModel({
         twitterId: twitterId,
         email: email,
         firstName: profile.displayName.split(' ')[0],
