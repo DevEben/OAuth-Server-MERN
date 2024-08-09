@@ -162,7 +162,7 @@ router.get('/auth/twitter',
 // });
 
 // Callback route to handle Twitter's response
-app.get('/auth/twitter/callback',
+router.get('/auth/twitter/callback',
     passport.authenticate('twitter', { failureRedirect: '/login', session: false }),
     (req, res) => {
       // Successful authentication
