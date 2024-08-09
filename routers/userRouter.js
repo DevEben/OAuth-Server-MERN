@@ -131,16 +131,6 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 //     })(req, res, next);
 // });
 
-router.get('/auth/twitter', passport.authenticate('twitter'));
-// router.get('/auth/twitter', passport.authenticate('twitter', {
-//     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
-//   }));
-
-router.get('/auth/twitter/callback', passport.authenticate('twitter', {
-    failureRedirect: '/auth/twitter/failure',
-    session: true
-}), (req, res) => {
-    try {
         // // Get the OAuth tokens from the query parameters
         // const oauthToken = req.query.oauth_token;
         // const oauthVerifier = req.query.oauth_verifier;
@@ -149,14 +139,47 @@ router.get('/auth/twitter/callback', passport.authenticate('twitter', {
         // req.session.oauthToken = oauthToken;
         // req.session.oauthVerifier = oauthVerifier;
 
+router.get('/auth/twitter', passport.authenticate('twitter'));
+// router.get('/auth/twitter', passport.authenticate('twitter', {
+//     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
+//   }));
+
+// router.get('/auth/twitter/callback', passport.authenticate('twitter', {
+//     failureRedirect: '/auth/twitter/failure',
+//     session: true
+// }), (req, res) => {
+//     try {
+//         const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
+//         console.log(token)
+//         res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).send('Error occurred during authentication');
+//     };
+// });
+
+
+// Twitter OAuth Callback
+app.get('/auth/twitter/callback', (req, res, next) => {
+    passport.authenticate('twitter', (err, user, info) => {
+      if (err) {
+        console.error('Twitter callback error:', err);
+        return next(err);
+      }
+      if (!user) {
+        console.error('Twitter authentication failed:', info);
+        return res.redirect('/login');
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error('Login error:', err);
+          return next(err);
+        }
         const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
-        console.log(token)
-        res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error occurred during authentication');
-    };
-});
+        return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+      });
+    })(req, res, next);
+  });
 
 
 
