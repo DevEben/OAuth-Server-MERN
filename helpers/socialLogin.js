@@ -58,9 +58,9 @@ const passport = require('passport');
 // const { TwitterApi } = require('twitter-api-v2');
 // const TwitterApi = require('twitter-api-v2').default;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-// const { Strategy: TwitterStrategy } = require('@superfaceai/passport-twitter-oauth2');
+const { Strategy: TwitterStrategy } = require('@superfaceai/passport-twitter-oauth2');
 // const TwitterStrategy = require('passport-twitter').Strategy;
-const TwitterOAuth2Strategy = require('passport-twitter-oauth2');
+// const TwitterOAuth2Strategy = require('passport-twitter-oauth2');
 const userModel = require('../models/userModel'); // Import User model
 // const OAuthTokenStore = require('oauth-token-store').default;
 
@@ -119,13 +119,14 @@ passport.use(new GoogleStrategy({
 
 // Twitter OAuth Strategy
 // Set up the Twitter OAuth 2.0 strategy
-passport.use(new TwitterOAuth2Strategy({
+passport.use(new TwitterStrategy({
   clientID: process.env.TWITTER_CLIENT_ID, // OAuth 2.0 Client ID
   clientSecret: process.env.TWITTER_CLIENT_SECRET, // OAuth 2.0 Client Secret
+  clientType: 'confidential',
   callbackURL: "https://spiraltech-api.onrender.com/auth/twitter/callback",
-  scope: ['tweet.read', 'users.read', 'offline.access'], // Define scopes as needed
-  state: true, // Enable state parameter for additional security
-  pkce: true, // Enable PKCE for enhanced security (if supported by library)
+  scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'], // Define scopes as needed
+  // state: true, // Enable state parameter for additional security
+  // pkce: true, // Enable PKCE for enhanced security (if supported by library)
 },
 async (accessToken, refreshToken, profile, done) => {
   try {
