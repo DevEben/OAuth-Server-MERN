@@ -120,44 +120,51 @@ passport.use(new GoogleStrategy({
 // Twitter OAuth Strategy
 // Set up the Twitter OAuth 2.0 strategy
 passport.use(new TwitterOAuth2Strategy({
-  clientID: process.env.TWITTER_CLIENT_ID, // Use OAuth 2.0 Client ID
-  clientSecret: process.env.TWITTER_CLIENT_SECRET, // Use OAuth 2.0 Client Secret
+  clientID: process.env.TWITTER_CLIENT_ID, // OAuth 2.0 Client ID
+  clientSecret: process.env.TWITTER_CLIENT_SECRET, // OAuth 2.0 Client Secret
   callbackURL: "https://spiraltech-api.onrender.com/auth/twitter/callback",
   scope: ['tweet.read', 'users.read', 'offline.access'], // Define scopes as needed
-  state: true // Enable state parameter for additional security
+  state: true, // Enable state parameter for additional security
+  pkce: true, // Enable PKCE for enhanced security (if supported by library)
 },
 async (accessToken, refreshToken, profile, done) => {
-    try {
-      console.log("Twitter User Profile: ", profile); // Log the profile for debugging
-      const twitterId = profile.id;
-      const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
-  
-      // Check if the user exists
-      const existingUser = await userModel.findOne({
-        $or: [{ email: email }, { twitterId: twitterId }]
-      });
-  
-      if (existingUser) {
-        return done(null, existingUser); // Existing user found
-      }
-  
-      // Create a new user
-      const newUser = new userModel({
-        twitterId: twitterId,
-        email: email,
-        firstName: profile.displayName.split(' ')[0],
-        lastName: profile.displayName.split(' ')[1] || '',
-        profilePicture: { url: profile.photos[0].value, public_id: Date.now() },
-        isVerified: true, // Assume email is verified if using Twitter
-      });
-  
-      await newUser.save(); // Save the new user
-      return done(null, newUser); // Return new user
-    } catch (err) {
-      return done(err);
-    }
-  }));
+  try {
+    console.log("Twitter User Profile: ", profile); // Log the profile for debugging
+    const twitterId = profile.id;
+    const email = profile.emails ? profile.emails[0].value : null; // Handle missing email
 
+    // Check if the user exists
+    const existingUser = await userModel.findOne({
+      $or: [{ email: email }, { twitterId: twitterId }]
+    });
+
+    if (existingUser) {
+      return done(null, existingUser); // Existing user found
+    }
+
+    // Create a new user
+    const [firstName, ...lastNameParts] = profile.displayName.split(' ');
+    const lastName = lastNameParts.join(' ');
+
+    const newUser = new userModel({
+      twitterId: twitterId,
+      email: email,
+      firstName: firstName,
+      lastName: lastName || '',
+      profilePicture: {
+        url: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null, 
+        public_id: Date.now().toString() // Ensure public_id is a string
+      },
+      isVerified: true // Assume email is verified if using Twitter
+    });
+
+    await newUser.save(); // Save the new user
+    return done(null, newUser); // Return new user
+  } catch (err) {
+    console.error("Error in Twitter OAuth 2.0 strategy:", err);
+    return done(err);
+  }
+}));
 
 
 // // Twitter OAuth2 Strategy

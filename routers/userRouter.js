@@ -139,7 +139,10 @@ router.get('/auth/google/callback', passport.authenticate('google', {
         // req.session.oauthToken = oauthToken;
         // req.session.oauthVerifier = oauthVerifier;
 
-router.get('/auth/twitter', passport.authenticate('twitter'));
+// Route to initiate Twitter login
+router.get('/auth/twitter',
+    passport.authenticate('twitter', { session: false }) // Use session as needed
+  );
 // router.get('/auth/twitter', passport.authenticate('twitter', {
 //     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
 //   }));
@@ -158,28 +161,37 @@ router.get('/auth/twitter', passport.authenticate('twitter'));
 //     };
 // });
 
+// Callback route to handle Twitter's response
+app.get('/auth/twitter/callback',
+    passport.authenticate('twitter', { failureRedirect: '/login', session: false }),
+    (req, res) => {
+      // Successful authentication
+      const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
+      return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+    }
+  );
 
-// Twitter OAuth Callback
-router.get('/auth/twitter/callback', (req, res, next) => {
-    passport.authenticate('twitter', (err, user, info) => {
-      if (err) {
-        console.error('Twitter callback error:', err);
-        return next(err);
-      }
-      if (!user) {
-        console.error('Twitter authentication failed:', info);
-        return res.redirect('/login');
-      }
-      req.logIn(user, (err) => {
-        if (err) {
-          console.error('Login error:', err);
-          return next(err);
-        }
-        const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
-        return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
-      });
-    })(req, res, next);
-  });
+  //Added logging to capture more information about the flow
+  passport.use(new TwitterOAuth2Strategy({
+    clientID: process.env.TWITTER_CLIENT_ID,
+    clientSecret: process.env.TWITTER_CLIENT_SECRET,
+    callbackURL: "https://spiraltech-api.onrender.com/auth/twitter/callback",
+    scope: ['tweet.read', 'users.read', 'offline.access'],
+    state: true
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      console.log("Access Token: ", accessToken);
+      console.log("Refresh Token: ", refreshToken);
+      console.log("Profile: ", profile);
+  
+      // Your logic here...
+  
+    } catch (err) {
+      console.error("Error during authentication: ", err);
+      return done(err);
+    }
+  }));
 
 
 
