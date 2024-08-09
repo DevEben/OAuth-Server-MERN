@@ -164,16 +164,48 @@ router.get('/auth/twitter',
 // Callback route to handle Twitter's response
 router.get('/auth/twitter/callback',
     passport.authenticate('twitter', { failureRedirect: '/auth/twitter/failure', session: true }),
-    (req, res) => {
+    async (req, res) => {
         // Check if there is an authentication error
         if (req.query.error) {
             console.error('Twitter authentication error:', req.query.error);
         }
+
+        // Retrieve authorization code from query parameters
+        const code = req.query.code;
+
+        // Exchange the authorization code for an access token
+        const tokenResponse = await exchangeCodeForToken(code);
+
         // Successful authentication
         const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
         return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
     }
 );
+
+
+// Function to exchange the authorization code for an access token
+async function exchangeCodeForToken(code) {
+    const clientIdAndSecret = `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_SECRET_KEY}`;
+    const encodedClientIdAndSecret = Buffer.from(clientIdAndSecret).toString('base64');
+  
+    const requestOptions = {
+      method: 'POST',
+      url: 'https://api.twitter.com/2/oauth2/token',
+      headers: {
+        'Authorization': `Basic ${encodedClientIdAndSecret}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: process.env.TWITTER_CALLBACK_URL,
+        code_verifier: req.session.codeVerifier, // Ensure you have stored this during the auth flow
+      }),
+    };
+  
+    const response = await axios(requestOptions);
+    return response.data;
+  }
 
 
 
