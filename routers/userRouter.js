@@ -159,65 +159,101 @@ router.get('/auth/google/callback', passport.authenticate('google', {
     res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
 });
 
+// Google Failure Route
+router.get('/auth/google/failure', (req, res) => {
+    res.send("Failed to authenticate using Google. Please try again.");
+});
 
-// Route to initiate Twitter login
-router.get('/auth/twitter',
-    passport.authenticate('twitter', { session: true }) // Use session as needed
-);
 
 
-// Callback route to handle Twitter's response
-router.get('/auth/twitter/callback',
-    passport.authenticate('twitter', { failureRedirect: '/auth/twitter/failure', session: true }),
-    async (req, res) => {
-        // Check if there is an authentication error
-        if (req.query.error) {
-            console.error('Twitter authentication error:', req.query.error);
-        }
 
-        // Retrieve authorization code from query parameters
-        const code = req.query.code;
 
-        console.log('Twitter authorization code: ', code);
+// // Route to initiate Twitter login
+// router.get('/auth/twitter',
+//     passport.authenticate('twitter', { session: true }) // Use session as needed
+// );
 
-        // Exchange the authorization code for an access token
-        const tokenResponse = await exchangeCodeForToken(code);
-        const accessToken = tokenResponse.access_token;
 
-        // Set authorization header with access token
-        req.headers.authorization = `Bearer ${accessToken}`;
-      
+// // Callback route to handle Twitter's response
+// router.get('/auth/twitter/callback',
+//     passport.authenticate('twitter', { failureRedirect: '/auth/twitter/failure', session: true }),
+//     async (req, res) => {
+//         // Check if there is an authentication error
+//         if (req.query.error) {
+//             console.error('Twitter authentication error:', req.query.error);
+//         }
+
+//         // Retrieve authorization code from query parameters
+//         const code = req.query.code;
+
+//         console.log('Twitter authorization code: ', code);
+
+//         // Exchange the authorization code for an access token
+//         const tokenResponse = await exchangeCodeForToken(code);
+//         const accessToken = tokenResponse.access_token;
+
+//         // Set authorization header with access token
+//         req.headers.authorization = `Bearer ${accessToken}`;
+
+
+//         // Successful authentication
+//         const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
+//         return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+//     }
+// );
+
+
+router.get('/auth/twitter', passport.authenticate('twitter'));
+
+router.get('/auth/twitter/callback', passport.authenticate('twitter', {
+    successRedirect: '/auth/twitter/success',
+    failureRedirect: '/auth/twitter/failure'
+}));
+
+router.get('/auth/twitter/success', (req, res) => {
+    if (req.user) {
+        const username = req.user.twitterId;
+        req.session.user = { username };
+
+        console.log("User: " + req.user);
 
         // Successful authentication
         const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
         return res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+    } else {
+        return res.redirect('/auth/twitter/failure');
     }
-);
+});
+
+router.get('/auth/twitter/failure', (req, res) => {
+    return res.status(401).json('Authentication failed');
+});
 
 
-// Function to exchange the authorization code for an access token
-async function exchangeCodeForToken(code) {
-    const clientIdAndSecret = `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_SECRET_KEY}`;
-    const encodedClientIdAndSecret = Buffer.from(clientIdAndSecret).toString('base64');
-  
-    const requestOptions = {
-      method: 'POST',
-      url: 'https://api.x.com/2/oauth2/token',
-      headers: {
-        'Authorization': `Basic ${encodedClientIdAndSecret}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      data: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: process.env.TWITTER_CALLBACK_URL,
-        code_verifier: req.session.codeVerifier, // Ensure you have stored this during the auth flow
-      }),
-    };
-  
-    const response = await axios(requestOptions);
-    return response.data;
-  }
+
+// // Function to exchange the authorization code for an access token
+// async function exchangeCodeForToken(code) {
+//     const clientIdAndSecret = `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_SECRET_KEY}`;
+//     const encodedClientIdAndSecret = Buffer.from(clientIdAndSecret).toString('base64');
+
+//     const requestOptions = {
+//       method: 'POST',
+//       url: 'https://api.x.com/2/oauth2/token',
+//       headers: {
+//         'Authorization': `Basic ${encodedClientIdAndSecret}`,
+//         'Content-Type': 'application/x-www-form-urlencoded',
+//       },
+//       data: new URLSearchParams({
+//         grant_type: 'authorization_code',
+//         code: code,
+//         redirect_uri: process.env.TWITTER_CALLBACK_URL,
+//         code_verifier: req.session.codeVerifier, // Ensure you have stored this during the auth flow
+//       }),
+//     };
+
+//     const response = await axios(requestOptions);
+//     return response.data;
+//   }
 
 
 
@@ -256,10 +292,6 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// Google Failure Route
-router.get('/auth/google/failure', (req, res) => {
-    res.send("Failed to authenticate using Google. Please try again.");
-});
 
 // Twitter Failure Route
 router.get('/auth/twitter/failure', (req, res) => {
