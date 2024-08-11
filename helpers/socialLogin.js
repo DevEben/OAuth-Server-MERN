@@ -184,7 +184,7 @@ passport.use(new TwitterStrategy({
   callbackURL: "https://spiraltech-api.onrender.com/auth/twitter/callback",
   scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'], // Define scopes as needed
   state: true, // Enable state parameter for additional security
-  pkce: true, // Enable PKCE for enhanced security (if supported by library)
+  // pkce: true, // Enable PKCE for enhanced security (if supported by library)
 },
 async (accessToken, refreshToken, profile, done) => {
   try {
