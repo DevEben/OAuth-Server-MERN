@@ -36,7 +36,7 @@ mongoose.connect(process.env.DATABASE, {
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 
 // Session configuration using MongoStore
 // app.use(session({
