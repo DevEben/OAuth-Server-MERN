@@ -26,13 +26,13 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// MongoDB connection
-mongoose.connect(process.env.DATABASE, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log('MongoDB connected'))
-    .catch((err) => console.error('MongoDB connection error:', err));
+// // MongoDB connection
+// mongoose.connect(process.env.DATABASE, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// })
+//     .then(() => console.log('MongoDB connected'))
+//     .catch((err) => console.error('MongoDB connection error:', err));
 
 // Middleware
 app.use(express.json());
