@@ -54,28 +54,6 @@
 
 
 
-// routers/userRouter.js
-const express = require('express');
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
-// const { twitterClient } = require('../helpers/socialLogin');
-const userModel = require('../models/userModel');
-const router = express.Router();
-
-const jwtSecret = process.env.SECRET;
-
-// Google Authentication Routes
-router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-router.get('/auth/google/callback', passport.authenticate('google', {
-    failureRedirect: '/auth/google/failure',
-    session: false // No session persistence
-}), (req, res) => {
-    const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' }); // Use only the ID for the token
-    res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
-});
-
-
 // // Sign-in with Twitter
 // router.get('/auth/twitter', (req, res) => {
 //     const authUrl = twitterClient.generateOAuth2AuthLink(
@@ -139,10 +117,7 @@ router.get('/auth/google/callback', passport.authenticate('google', {
 // req.session.oauthToken = oauthToken;
 // req.session.oauthVerifier = oauthVerifier;
 
-// Route to initiate Twitter login
-router.get('/auth/twitter',
-    passport.authenticate('twitter', { session: true }) // Use session as needed
-);
+
 // router.get('/auth/twitter', passport.authenticate('twitter', {
 //     scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
 //   }));
@@ -160,6 +135,36 @@ router.get('/auth/twitter',
 //         res.status(500).send('Error occurred during authentication');
 //     };
 // });
+
+
+
+// routers/userRouter.js
+const express = require('express');
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
+// const { twitterClient } = require('../helpers/socialLogin');
+const userModel = require('../models/userModel');
+const router = express.Router();
+
+const jwtSecret = process.env.SECRET;
+
+// Google Authentication Routes
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/auth/google/callback', passport.authenticate('google', {
+    failureRedirect: '/auth/google/failure',
+    session: false // No session persistence
+}), (req, res) => {
+    const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' }); // Use only the ID for the token
+    res.redirect(`https://spiraltech.onrender.com/#/auth-success?token=${token}`);
+});
+
+
+// Route to initiate Twitter login
+router.get('/auth/twitter',
+    passport.authenticate('twitter', { session: true }) // Use session as needed
+);
+
 
 // Callback route to handle Twitter's response
 router.get('/auth/twitter/callback',
