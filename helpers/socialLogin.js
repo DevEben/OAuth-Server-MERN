@@ -250,12 +250,15 @@ passport.use(new GoogleStrategy({
 
 
 // Set up Twitter strategy
-
+console.log("consumerKey: " + process.env.TWITTER_CONSUMER_KEY,
+  "consumerSecret: " + process.env.TWITTER_CONSUMER_SECRET,
+  "callbackURL: " + process.env.TWITTER_CALLBACK_URL,);
+  
 passport.use(new TwitterStrategy({
   consumerKey: process.env.TWITTER_CONSUMER_KEY,
   consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
   callbackURL: process.env.TWITTER_CALLBACK_URL,
-  includeEmail: true
+  includeEmail: true,
 },
   async (token, tokenSecret, profile, done) => {
     try {
