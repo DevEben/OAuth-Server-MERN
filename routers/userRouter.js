@@ -182,6 +182,11 @@ router.get('/auth/twitter/callback',
 
         // Exchange the authorization code for an access token
         const tokenResponse = await exchangeCodeForToken(code);
+        const accessToken = tokenResponse.access_token;
+
+        // Set authorization header with access token
+        req.headers.authorization = `Bearer ${accessToken}`;
+      
 
         // Successful authentication
         const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' });
