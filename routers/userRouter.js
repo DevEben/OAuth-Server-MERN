@@ -178,6 +178,8 @@ router.get('/auth/twitter/callback',
         // Retrieve authorization code from query parameters
         const code = req.query.code;
 
+        console.log('Twitter authorization code: ', code);
+
         // Exchange the authorization code for an access token
         const tokenResponse = await exchangeCodeForToken(code);
 
@@ -195,7 +197,7 @@ async function exchangeCodeForToken(code) {
   
     const requestOptions = {
       method: 'POST',
-      url: 'https://api.twitter.com/2/oauth2/token',
+      url: 'https://api.x.com/2/oauth2/token',
       headers: {
         'Authorization': `Basic ${encodedClientIdAndSecret}`,
         'Content-Type': 'application/x-www-form-urlencoded',
