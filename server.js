@@ -21,7 +21,7 @@ const corsOptions = {
         "http://localhost:5174",
     ],
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    credentials: true // Allow credentials (cookies)
+    // credentials: true // Allow credentials (cookies)
 };
 
 app.use(cors(corsOptions));
